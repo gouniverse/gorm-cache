@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"github.com/gouniverse/uid"
 )
 
@@ -32,7 +32,7 @@ func (c *Cache) BeforeCreate(scope *gorm.Scope) (err error) {
 }
 
 // CacheFindByKey finds a cache by key
-func CacheFindByKey(db gorm.DB, key string) *Cache {
+func CacheFindByKey(db *gorm.DB, key string) *Cache {
 	cache := &Cache{}
 	if db.Where("`key` = ?", key).First(&cache).RecordNotFound() {
 		return nil
@@ -42,7 +42,7 @@ func CacheFindByKey(db gorm.DB, key string) *Cache {
 }
 
 // CacheGet gets a key from cache
-func CacheGet(db gorm.DB, key string, valueDefault string) string {
+func CacheGet(db *gorm.DB, key string, valueDefault string) string {
 	cache := CacheFindByKey(db, key)
 
 	if cache != nil {
@@ -53,7 +53,7 @@ func CacheGet(db gorm.DB, key string, valueDefault string) string {
 }
 
 // CacheSet sets a key in cache
-func CacheSet(db gorm.DB, key string, value string, seconds int64) bool {
+func CacheSet(db *gorm.DB, key string, value string, seconds int64) bool {
 	cache := CacheFindByKey(db, key)
 	expiresAt := time.Now().Add(time.Second * time.Duration(seconds))
 
