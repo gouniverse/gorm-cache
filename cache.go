@@ -2,6 +2,8 @@ package cache
 
 import (
 	"fmt"
+	"errors"
+	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -28,10 +30,7 @@ func (Cache) TableName() string {
 func (c *Cache) BeforeCreate(tx *gorm.DB) (err error) {
 	uuid := uid.NanoUid()
 	c.ID = uuid
-	if !u.IsValid() {
-		err = errors.New("can't save invalid data")
-	}
-	return
+	return nil
 }
 
 // CacheFindByKey finds a cache by key
@@ -45,7 +44,7 @@ func CacheFindByKey(db *gorm.DB, key string) *Cache {
 			return nil
 	    	}
 		
-		log.Panic(result.Error())
+		log.Panic(result.Error)
 	}
 
 	return cache
