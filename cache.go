@@ -25,10 +25,13 @@ func (Cache) TableName() string {
 }
 
 // BeforeCreate adds UID to model
-func (c *Cache) BeforeCreate(scope *gorm.Scope) (err error) {
+func (c *Cache) BeforeCreate(tx *gorm.DB) (err error) {
 	uuid := uid.NanoUid()
-	scope.SetColumn("ID", uuid)
-	return nil
+	c.ID = uuid
+	if !u.IsValid() {
+		err = errors.New("can't save invalid data")
+	}
+	return
 }
 
 // CacheFindByKey finds a cache by key
