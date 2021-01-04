@@ -34,8 +34,15 @@ func (c *Cache) BeforeCreate(scope *gorm.Scope) (err error) {
 // CacheFindByKey finds a cache by key
 func CacheFindByKey(db *gorm.DB, key string) *Cache {
 	cache := &Cache{}
-	if db.Where("`key` = ?", key).First(&cache).RecordNotFound() {
-		return nil
+	
+	result := db.Where("`key` = ?", key).First(&cache)
+	
+	if result.Error != nil {
+	    	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil
+	    	}
+		
+		log.Panic(result.Error())
 	}
 
 	return cache
