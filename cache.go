@@ -32,9 +32,9 @@ func (c *Cache) BeforeCreate(scope *gorm.Scope) (err error) {
 }
 
 // CacheFindByKey finds a cache by key
-func CacheFindByKey(key string) *Cache {
+func CacheFindByKey(db gorm.DB, key string) *Cache {
 	cache := &Cache{}
-	if GetDb().Where("`key` = ?", key).First(&cache).RecordNotFound() {
+	if db.Where("`key` = ?", key).First(&cache).RecordNotFound() {
 		return nil
 	}
 
@@ -42,8 +42,8 @@ func CacheFindByKey(key string) *Cache {
 }
 
 // CacheGet gets a key from cache
-func CacheGet(key string, valueDefault string) string {
-	cache := CacheFindByKey(key)
+func CacheGet(db gorm.DB, key string, valueDefault string) string {
+	cache := CacheFindByKey(db, key)
 
 	if cache != nil {
 		return cache.Value
@@ -53,15 +53,15 @@ func CacheGet(key string, valueDefault string) string {
 }
 
 // CacheSet sets a key in cache
-func CacheSet(key string, value string, seconds int64) bool {
-	cache := CacheFindByKey(key)
+func CacheSet(db gorm.DB, key string, value string, seconds int64) bool {
+	cache := CacheFindByKey(db, key)
 	expiresAt := time.Now().Add(time.Second * time.Duration(seconds))
 
 	if cache != nil {
 		cache.Value = value
 		cache.ExpiresAt = &expiresAt
 		//dbResult := GetDb().Table(User).Where("`key` = ?", key).Update(&cache)
-		dbResult := GetDb().Save(&cache)
+		dbResult := db.Save(&cache)
 		if dbResult != nil {
 			return false
 		}
@@ -70,7 +70,7 @@ func CacheSet(key string, value string, seconds int64) bool {
 
 	var newCache = Cache{Key: key, Value: value, ExpiresAt: &expiresAt}
 
-	dbResult := GetDb().Create(&newCache)
+	dbResult := db.Create(&newCache)
 
 	if dbResult.Error != nil {
 		return false
@@ -80,12 +80,12 @@ func CacheSet(key string, value string, seconds int64) bool {
 }
 
 // CacheExpireJobGoroutine - soft deletes expired cache
-func CacheExpireJobGoroutine() {
+func CacheExpireJobGoroutine(db gorm.DB) {
 	i := 0
 	for {
 		i++
 		fmt.Println("Cleaning expired cache...")
-		GetDb().Where("`expires_at` < ?", time.Now()).Delete(Cache{})
+		db.Where("`expires_at` < ?", time.Now()).Delete(Cache{})
 		time.Sleep(60 * time.Second) // Every minute
 	}
 }
