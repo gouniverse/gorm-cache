@@ -28,7 +28,7 @@ func (Cache) TableName() string {
 
 // BeforeCreate adds UID to model
 func (c *Cache) BeforeCreate(tx *gorm.DB) (err error) {
-	uuid := uid.NanoUid()
+	uuid := uid.HumanUid()
 	c.ID = uuid
 	return nil
 }
