@@ -1,13 +1,13 @@
 package cache
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
-	"gorm.io/gorm"
 	"github.com/gouniverse/uid"
+	"gorm.io/gorm"
 )
 
 // Cache type
@@ -33,26 +33,26 @@ func (c *Cache) BeforeCreate(tx *gorm.DB) (err error) {
 	return nil
 }
 
-// CacheFindByKey finds a cache by key
-func CacheFindByKey(db *gorm.DB, key string) *Cache {
+// FindByKey finds a cache by key
+func FindByKey(db *gorm.DB, key string) *Cache {
 	cache := &Cache{}
-	
+
 	result := db.Where("`key` = ?", key).First(&cache)
-	
+
 	if result.Error != nil {
-	    	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil
-	    	}
-		
+		}
+
 		log.Panic(result.Error)
 	}
 
 	return cache
 }
 
-// CacheGet gets a key from cache
-func CacheGet(db *gorm.DB, key string, valueDefault string) string {
-	cache := CacheFindByKey(db, key)
+// Get gets a key from cache
+func Get(db *gorm.DB, key string, valueDefault string) string {
+	cache := FindByKey(db, key)
 
 	if cache != nil {
 		return cache.Value
@@ -61,9 +61,9 @@ func CacheGet(db *gorm.DB, key string, valueDefault string) string {
 	return valueDefault
 }
 
-// CacheSet sets a key in cache
-func CacheSet(db *gorm.DB, key string, value string, seconds int64) bool {
-	cache := CacheFindByKey(db, key)
+// Set sets a key in cache
+func Set(db *gorm.DB, key string, value string, seconds int64) bool {
+	cache := FindByKey(db, key)
 	expiresAt := time.Now().Add(time.Second * time.Duration(seconds))
 
 	if cache != nil {
@@ -88,8 +88,8 @@ func CacheSet(db *gorm.DB, key string, value string, seconds int64) bool {
 	return true
 }
 
-// CacheExpireJobGoroutine - soft deletes expired cache
-func CacheExpireJobGoroutine(db gorm.DB) {
+// ExpireCacheGoroutine - soft deletes expired cache
+func ExpireCacheGoroutine(db gorm.DB) {
 	i := 0
 	for {
 		i++
